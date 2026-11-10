@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
+import { createGuidedTour } from './tour.js';
 
 const $=s=>document.querySelector(s);
 const state={building:null,floor:'all',room:null};
@@ -7,13 +8,14 @@ const floorNames=['all','B1','1F','2F','3F','4F'];
 let renderer,scene,camera,controls,data,config,buildings=[],floorGroups=[],roomMeshes=[],labels=[],pickable=[],stairMarkers=[];
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 let transition=null,dragStart=null;
+let tour=null,tourReturn=null;
 const white=new THREE.MeshStandardMaterial({color:0xe6e4da,roughness:.9});
 const wall=new THREE.MeshStandardMaterial({color:0xf1f0e5,roughness:1});
 const edgeMaterial=new THREE.LineBasicMaterial({color:0xaab6a0,transparent:true,opacity:.65});
 function box(w,h,d,x,y,z,material=white,parent=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
 function outline(mesh){const l=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry),edgeMaterial);mesh.add(l);}
 function floorY(f){return f==='B1'?-config.basementHeight:(Number(f[0])-1)*config.floorHeight;}
-function animateTo(position,target){transition={from:camera.position.clone(),to:position.clone(),old:controls.target.clone(),target:target.clone(),start:performance.now()};}
+function animateTo(position,target){if(matchMedia('(prefers-reduced-motion: reduce)').matches){transition=null;camera.position.copy(position);controls.target.copy(target);controls.update();return;}transition={from:camera.position.clone(),to:position.clone(),old:controls.target.clone(),target:target.clone(),start:performance.now()};}
 function home(top=false){const center=new THREE.Vector3(-16,0,8);animateTo(new THREE.Vector3(top?-16:-150,top?230:170,top?8.1:220),center);$('#view-name').textContent=top?'全校俯視':'全校鳥瞰';}
 function focusBuilding(id){const b=config.buildings.find(b=>b.id===id);const y=state.floor==='B1'?-1:6;animateTo(new THREE.Vector3(b.x-40,60,b.z+60),new THREE.Vector3(b.x,y,b.z));}
 function roomNote(r){if(r.code==='2401')return '舞蹈與辦公室共用一室';if(r.code==='4101')return '一室分成兩空間；隔牆位置為示意';if(['5101','5102'].includes(r.code))return '1F，與'+(r.code==='5101'?'圖書館':'桌球教室')+'相連';if(r.code==='5202')return '2F～4F挑高；範圍與高度為示意';return '';}
@@ -73,7 +75,7 @@ function createSite(){
  }
  for(const st of stairMarkers){const el=document.createElement('span');el.className='map-label stair-label';el.textContent='樓梯';el.setAttribute('aria-label','樓梯位置示意');el.hidden=true;$('#labels-layer').append(el);st.el=el;}
 }
-function selectBuilding(id){state.building=id;state.room=null;update();if(id)focusBuilding(id);else home();}
+function selectBuilding(id){tour?.stop({restore:false,focus:false});state.building=id;state.room=null;update();if(id)focusBuilding(id);else home();}
 function update(){
  for(const g of floorGroups)g.visible=state.floor==='all'?g.userData.floor!=='B1':g.userData.floor===state.floor;
  // In basement mode the surface disappears so the three confirmed basement plates can be viewed.
@@ -93,12 +95,24 @@ function renderRooms(){
  const list=data.rooms.filter(r=>(!state.building||r.buildingId===state.building)&&(state.floor==='all'||r.floor===state.floor)&&(!term||[r.code,r.displayName,r.building].join(' ').toLowerCase().includes(term)));
  $('#space-count').textContent=list.length;$('#result-count').textContent=state.floor==='B1'?'地下室尚未配置教室資料':`符合條件 ${list.length} 個空間`;
  const container=$('#room-list');container.replaceChildren();
- for(const r of list){const button=document.createElement('button');button.className='room'+(state.room===r.id?' active':'');const title=document.createElement('b');title.textContent=r.displayName;const sub=document.createElement('small');sub.textContent=`${r.building} · ${r.floor}${r.code?' · '+r.code:' · 無編碼'}`;button.append(title,sub);const note=roomNote(r);if(note){const e=document.createElement('em');e.textContent=note;button.append(e);}button.addEventListener('click',()=>{state.room=r.id;state.building=r.buildingId;state.floor=r.floor;update();const mesh=roomMeshes.find(m=>m.userData.room===r.id);if(mesh){const p=mesh.getWorldPosition(new THREE.Vector3());animateTo(p.clone().add(new THREE.Vector3(-16,25,27)),p);}});container.append(button);}
+ for(const r of list){const button=document.createElement('button');button.className='room'+(state.room===r.id?' active':'');const title=document.createElement('b');title.textContent=r.displayName;const sub=document.createElement('small');sub.textContent=`${r.building} · ${r.floor}${r.code?' · '+r.code:' · 無編碼'}`;button.append(title,sub);const note=roomNote(r);if(note){const e=document.createElement('em');e.textContent=note;button.append(e);}button.addEventListener('click',()=>{tour?.stop({restore:false,focus:false});state.room=r.id;state.building=r.buildingId;state.floor=r.floor;update();const mesh=roomMeshes.find(m=>m.userData.room===r.id);if(mesh){const p=mesh.getWorldPosition(new THREE.Vector3());animateTo(p.clone().add(new THREE.Vector3(-16,25,27)),p);}});container.append(button);}
 }
 function initUI(){
  const nav=$('#buildings');for(const [i,b] of [{id:'all',name:'全校總覽'},...config.buildings].entries()){const button=document.createElement('button');button.className='building-button';button.dataset.id=b.id;const num=document.createElement('span');num.className='num';num.textContent=String(i).padStart(2,'0');const title=document.createElement('span');title.textContent=b.name;const arrow=document.createElement('span');arrow.className='arrow';arrow.textContent='↗';button.append(num,title,arrow);button.onclick=()=>selectBuilding(b.id==='all'?null:b.id);nav.append(button);}
- for(const f of floorNames){const button=document.createElement('button');button.className='floor-button';button.dataset.floor=f;button.textContent=f==='all'?'全棟':f;button.onclick=()=>{state.floor=f;state.room=null;update();if(f==='B1')animateTo(new THREE.Vector3(-70,100,90),new THREE.Vector3(0,-3,0));};$('#floors').append(button);}
- $('#home').onclick=()=>{state.building=null;state.floor='all';state.room=null;$('#search').value='';update();home();};$('#top').onclick=()=>home(true);$('#search').oninput=renderRooms;$('#labels').onchange=()=>$('#labels-layer').hidden=!$('#labels').checked;
+ for(const f of floorNames){const button=document.createElement('button');button.className='floor-button';button.dataset.floor=f;button.textContent=f==='all'?'全棟':f;button.onclick=()=>{tour?.stop({restore:false,focus:false});state.floor=f;state.room=null;update();if(f==='B1')animateTo(new THREE.Vector3(-70,100,90),new THREE.Vector3(0,-3,0));};$('#floors').append(button);}
+ $('#home').onclick=()=>{tour?.stop({restore:false,focus:false});state.building=null;state.floor='all';state.room=null;$('#search').value='';update();home();};$('#top').onclick=()=>{tour?.stop({restore:false,focus:false});home(true);};$('#search').oninput=()=>{tour?.stop({restore:false,focus:false});renderRooms();};$('#labels').onchange=()=>$('#labels-layer').hidden=!$('#labels').checked;
+ tour=createGuidedTour({
+  onStart:()=>{tourReturn={state:{...state},search:$('#search').value,position:camera.position.clone(),target:controls.target.clone()};},
+  onVisit:stop=>{
+   $('#search').value='';
+   if(!stop.room){state.building=null;state.floor='all';state.room=null;update();home();return;}
+   const r=data.rooms.find(r=>r.id===stop.room),mesh=roomMeshes.find(m=>m.userData.room===stop.room);
+   if(!r||!mesh)return;
+   Object.assign(state,{building:r.buildingId,floor:r.floor,room:r.id});update();
+   const p=mesh.getWorldPosition(new THREE.Vector3());animateTo(p.clone().add(new THREE.Vector3(-18,24,30)),p);
+  },
+  onExit:({restore})=>{if(restore&&tourReturn){Object.assign(state,tourReturn.state);$('#search').value=tourReturn.search;update();animateTo(tourReturn.position,tourReturn.target);}tourReturn=null;}
+ });
 }
 function resize(){const el=$('#scene');renderer.setSize(el.clientWidth,el.clientHeight);camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();}
 function frame(){
@@ -120,8 +134,8 @@ async function start(){
  scene.add(new THREE.HemisphereLight(0xffffff,0x9aaa86,2.6));const sun=new THREE.DirectionalLight(0xfff9e7,3);sun.position.set(-60,100,40);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-130,right:130,top:100,bottom:-100,near:1,far:300});sun.shadow.bias=-.001;scene.add(sun);
  createSite();scene.userData.ground=scene.children.find(o=>o.isMesh);initUI();resize();new ResizeObserver(resize).observe($('#scene'));
  renderer.domElement.addEventListener('pointerdown',e=>dragStart=[e.clientX,e.clientY]);
- renderer.domElement.addEventListener('pointerup',e=>{if(!dragStart||Math.hypot(e.clientX-dragStart[0],e.clientY-dragStart[1])>5)return;const rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);const hit=ray.intersectObjects(pickable.filter(m=>m.parent.visible),false)[0];if(hit){state.building=hit.object.userData.building;state.room=hit.object.userData.room||null;update();}});
+ renderer.domElement.addEventListener('pointerup',e=>{if(!dragStart||Math.hypot(e.clientX-dragStart[0],e.clientY-dragStart[1])>5)return;const rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);const hit=ray.intersectObjects(pickable.filter(m=>m.parent.visible),false)[0];if(hit){tour?.stop({restore:false,focus:false});state.building=hit.object.userData.building;state.room=hit.object.userData.room||null;update();}});
  update();$('#loading').hidden=true;frame();
- window.campusDebug={state,data,config,floorGroups,roomMeshes,stairMarkers,scene,renderer};
+ window.campusDebug={state,data,config,floorGroups,roomMeshes,stairMarkers,scene,renderer,tour};
 }
 start().catch(e=>{console.error(e);$('#loading').textContent='模型載入失敗。請重新整理網頁，並確認瀏覽器支援WebGL 2。錯誤：'+e.message;});
