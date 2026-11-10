@@ -4,7 +4,7 @@ import { OrbitControls } from './vendor/OrbitControls.js';
 const $=s=>document.querySelector(s);
 const state={building:null,floor:'all',room:null};
 const floorNames=['all','B1','1F','2F','3F','4F'];
-let renderer,scene,camera,controls,data,config,buildings=[],floorGroups=[],roomMeshes=[],labels=[],pickable=[];
+let renderer,scene,camera,controls,data,config,buildings=[],floorGroups=[],roomMeshes=[],labels=[],pickable=[],stairMarkers=[];
 const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 let transition=null,dragStart=null;
 const white=new THREE.MeshStandardMaterial({color:0xe6e4da,roughness:.9});
@@ -25,23 +25,22 @@ function createFloor(b,f){
   const m=box(b.width,.3,b.depth,b.x,y,b.z,new THREE.MeshStandardMaterial({color:0xc9d4bd,transparent:true,opacity:.75}),g);outline(m);
   m.userData={building:b.id};pickable.push(m);return;
  }
- const isVoid=b.id==='ACT'&&['3F','4F'].includes(f);
- if(!isVoid){const slab=box(b.width,.27,b.depth,b.x,y,b.z,white,g);slab.userData={building:b.id};pickable.push(slab);outline(slab);}
- else{box(b.width,.27,10,b.x,y,b.z+b.depth/2-5,white,g);box(.4,.27,b.depth,b.x-b.width/2,y,b.z,white,g);box(.4,.27,b.depth,b.x+b.width/2,y,b.z,white,g);}
- if(b.id==='B2'){
-  // 1F drawing shows side passages around the open region toward B3.
-  // Upper-floor continuity is provisional until each floor is traced.
-  for(const p of config.passages){
-   const passage=box(p.width,.27,p.depth,p.x,y,p.z,white,g);passage.userData={building:b.id};pickable.push(passage);outline(passage);
-  }
- }
+ const layout=config.floorLayouts[`${b.id}:${f}`];
+ for(const p of [...layout.plates,...layout.passages]){const slab=box(p.width,.27,p.depth,p.x,y,p.z,white,g);slab.userData={building:b.id};pickable.push(slab);outline(slab);}
  // Open-topped white volumes convey floors without claiming detailed door/window geometry.
  const h=config.floorHeight-.45;
- for(const [x,z,w,d] of [[b.x,b.z-b.depth/2,b.width,.22],[b.x-b.width/2,b.z,.22,b.depth],[b.x+b.width/2,b.z,.22,b.depth]]){
+ const e=layout.envelope;
+ for(const [x,z,w,d] of [[e.x,e.z-e.depth/2,e.width,.22],[e.x-e.width/2,e.z,.22,e.depth],[e.x+e.width/2,e.z,.22,e.depth]]){
   const mesh=box(w,h,d,x,y+h/2+.15,z,wall,g);mesh.userData={building:b.id};pickable.push(mesh);
  }
- if(isVoid){
-  const line=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(b.x-b.width/2+.6,y+.3,b.z-b.depth/2+.6),new THREE.Vector3(b.x+b.width/2-.6,y+.3,b.z-b.depth/2+.6),new THREE.Vector3(b.x+b.width/2-.6,y+.3,b.z+b.depth/2-10.4),new THREE.Vector3(b.x-b.width/2+.6,y+.3,b.z+b.depth/2-10.4)]),new THREE.LineBasicMaterial({color:0xbc9450}));g.add(line);
+ for(const v of layout.voids){
+  const line=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(v.x-v.width/2,y+.3,v.z-v.depth/2),new THREE.Vector3(v.x+v.width/2,y+.3,v.z-v.depth/2),new THREE.Vector3(v.x+v.width/2,y+.3,v.z+v.depth/2),new THREE.Vector3(v.x-v.width/2,y+.3,v.z+v.depth/2)]),new THREE.LineBasicMaterial({color:0xbc9450}));g.add(line);
+ }
+ for(const st of config.stairs.filter(s=>s.building===b.id&&s.floors.includes(f))){
+  const pad=box(st.width,.18,st.depth,st.x,y+.25,st.z,new THREE.MeshStandardMaterial({color:0xd5bb7d,roughness:1}),g);outline(pad);
+  // Four lines are an abstract stair symbol, not the actual tread count.
+  for(let i=1;i<=4;i++)box(st.width*.85,.04,.08,st.x,y+.36,st.z-st.depth/2+st.depth*i/5,new THREE.MeshStandardMaterial({color:0x947542}),g);
+  stairMarkers.push({building:b.id,floor:f,position:new THREE.Vector3(st.x,y+1,st.z),id:st.id});
  }
  for(const r of rooms){
   const {x,z,width:w,depth:d}=config.roomGeometry[r.id];
@@ -72,6 +71,7 @@ function createSite(){
   buildings.push(b);for(let i=1;i<=4;i++)createFloor(b,`${i}F`);if(b.basement)createFloor(b,'B1');
   const el=document.createElement('button');el.className='map-label';el.textContent=b.name;el.addEventListener('click',()=>selectBuilding(b.id));$('#labels-layer').append(el);labels.push({el,b});
  }
+ for(const st of stairMarkers){const el=document.createElement('span');el.className='map-label stair-label';el.textContent='樓梯';el.setAttribute('aria-label','樓梯位置示意');el.hidden=true;$('#labels-layer').append(el);st.el=el;}
 }
 function selectBuilding(id){state.building=id;state.room=null;update();if(id)focusBuilding(id);else home();}
 function update(){
@@ -109,6 +109,7 @@ function frame(){
  const northPoint=controls.target.clone().add(new THREE.Vector3(0,0,-10)).project(camera),centerPoint=controls.target.clone().project(camera);
  $('.north span').style.transform=`rotate(${Math.atan2((northPoint.x-centerPoint.x)*width,(northPoint.y-centerPoint.y)*height)}rad)`;
  for(const {el,b} of labels){const y=state.floor==='all'?17:state.floor==='B1'?-2:floorY(state.floor)+4;const v=new THREE.Vector3(b.x,y,b.z).project(camera);el.style.left=`${(v.x*.5+.5)*width}px`;el.style.top=`${(-v.y*.5+.5)*height}px`;el.style.display=v.z>1||Math.abs(v.x)>1||Math.abs(v.y)>1||(state.floor==='B1'&&!b.basement)?'none':'';}
+ for(const st of stairMarkers){const v=st.position.clone().project(camera);const enabled=$('#stairs').checked&&state.floor!=='all'&&state.floor===st.floor&&(!state.building||state.building===st.building);st.el.hidden=!enabled;st.el.style.left=`${(v.x*.5+.5)*width}px`;st.el.style.top=`${(-v.y*.5+.5)*height}px`;st.el.style.display=v.z>1||Math.abs(v.x)>1||Math.abs(v.y)>1?'none':'';}
 }
 async function start(){
  const responses=await Promise.all([fetch('./data/spaces.json'),fetch('./data/model-config.json')]);if(responses.some(r=>!r.ok))throw Error('無法載入空間資料');[data,config]=await Promise.all(responses.map(r=>r.json()));
@@ -121,6 +122,6 @@ async function start(){
  renderer.domElement.addEventListener('pointerdown',e=>dragStart=[e.clientX,e.clientY]);
  renderer.domElement.addEventListener('pointerup',e=>{if(!dragStart||Math.hypot(e.clientX-dragStart[0],e.clientY-dragStart[1])>5)return;const rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);const hit=ray.intersectObjects(pickable.filter(m=>m.parent.visible),false)[0];if(hit){state.building=hit.object.userData.building;state.room=hit.object.userData.room||null;update();}});
  update();$('#loading').hidden=true;frame();
- window.campusDebug={state,data,config,floorGroups,roomMeshes,scene,renderer};
+ window.campusDebug={state,data,config,floorGroups,roomMeshes,stairMarkers,scene,renderer};
 }
 start().catch(e=>{console.error(e);$('#loading').textContent='模型載入失敗。請重新整理網頁，並確認瀏覽器支援WebGL 2。錯誤：'+e.message;});
