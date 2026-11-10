@@ -1,0 +1,126 @@
+import * as THREE from 'three';
+import { OrbitControls } from './vendor/OrbitControls.js';
+
+const $=s=>document.querySelector(s);
+const state={building:null,floor:'all',room:null};
+const floorNames=['all','B1','1F','2F','3F','4F'];
+let renderer,scene,camera,controls,data,config,buildings=[],floorGroups=[],roomMeshes=[],labels=[],pickable=[];
+const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
+let transition=null,dragStart=null;
+const white=new THREE.MeshStandardMaterial({color:0xe6e4da,roughness:.9});
+const wall=new THREE.MeshStandardMaterial({color:0xf1f0e5,roughness:1});
+const edgeMaterial=new THREE.LineBasicMaterial({color:0xaab6a0,transparent:true,opacity:.65});
+function box(w,h,d,x,y,z,material=white,parent=scene){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
+function outline(mesh){const l=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry),edgeMaterial);mesh.add(l);}
+function floorY(f){return f==='B1'?-config.basementHeight:(Number(f[0])-1)*config.floorHeight;}
+function animateTo(position,target){transition={from:camera.position.clone(),to:position.clone(),old:controls.target.clone(),target:target.clone(),start:performance.now()};}
+function home(top=false){const center=new THREE.Vector3(-16,0,8);animateTo(new THREE.Vector3(top?-16:-150,top?230:170,top?8.1:220),center);$('#view-name').textContent=top?'全校俯視':'全校鳥瞰';}
+function focusBuilding(id){const b=config.buildings.find(b=>b.id===id);const y=state.floor==='B1'?-1:6;animateTo(new THREE.Vector3(b.x-40,60,b.z+60),new THREE.Vector3(b.x,y,b.z));}
+function roomNote(r){if(r.code==='2401')return '舞蹈與辦公室共用一室';if(r.code==='4101')return '一室分成兩空間；隔牆位置為示意';if(['5101','5102'].includes(r.code))return '1F，與'+(r.code==='5101'?'圖書館':'桌球教室')+'相連';if(r.code==='5202')return '2F～4F挑高；範圍與高度為示意';return '';}
+function createFloor(b,f){
+ const y=floorY(f),g=new THREE.Group();scene.add(g);g.userData={building:b.id,floor:f};floorGroups.push(g);
+ const rooms=data.rooms.filter(r=>r.buildingId===b.id&&r.floor===f);
+ if(f==='B1'){
+  // Only the existence of B2/B3/B4 basements is confirmed; no internal room assignment.
+  const m=box(b.width,.3,b.depth,b.x,y,b.z,new THREE.MeshStandardMaterial({color:0xc9d4bd,transparent:true,opacity:.75}),g);outline(m);
+  m.userData={building:b.id};pickable.push(m);return;
+ }
+ const isVoid=b.id==='ACT'&&['3F','4F'].includes(f);
+ if(!isVoid){const slab=box(b.width,.27,b.depth,b.x,y,b.z,white,g);slab.userData={building:b.id};pickable.push(slab);outline(slab);}
+ else{box(b.width,.27,10,b.x,y,b.z+b.depth/2-5,white,g);box(.4,.27,b.depth,b.x-b.width/2,y,b.z,white,g);box(.4,.27,b.depth,b.x+b.width/2,y,b.z,white,g);}
+ if(b.id==='B2'){
+  // 1F drawing shows side passages around the open region toward B3.
+  // Upper-floor continuity is provisional until each floor is traced.
+  for(const p of config.passages){
+   const passage=box(p.width,.27,p.depth,p.x,y,p.z,white,g);passage.userData={building:b.id};pickable.push(passage);outline(passage);
+  }
+ }
+ // Open-topped white volumes convey floors without claiming detailed door/window geometry.
+ const h=config.floorHeight-.45;
+ for(const [x,z,w,d] of [[b.x,b.z-b.depth/2,b.width,.22],[b.x-b.width/2,b.z,.22,b.depth],[b.x+b.width/2,b.z,.22,b.depth]]){
+  const mesh=box(w,h,d,x,y+h/2+.15,z,wall,g);mesh.userData={building:b.id};pickable.push(mesh);
+ }
+ if(isVoid){
+  const line=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(b.x-b.width/2+.6,y+.3,b.z-b.depth/2+.6),new THREE.Vector3(b.x+b.width/2-.6,y+.3,b.z-b.depth/2+.6),new THREE.Vector3(b.x+b.width/2-.6,y+.3,b.z+b.depth/2-10.4),new THREE.Vector3(b.x-b.width/2+.6,y+.3,b.z+b.depth/2-10.4)]),new THREE.LineBasicMaterial({color:0xbc9450}));g.add(line);
+ }
+ for(const r of rooms){
+  const {x,z,width:w,depth:d}=config.roomGeometry[r.id];
+  const mat=new THREE.MeshStandardMaterial({color:0xdde6d1,roughness:1,transparent:true,opacity:.85});
+  const m=box(w,.45,d,x,y+.4,z,mat,g);outline(m);m.userData={room:r.id,building:b.id};roomMeshes.push(m);pickable.push(m);
+  if(r.code==='4101'){
+   // Partition exists, but the midpoint location below is only illustrative.
+   box(w,.65,.13,x,y+.8,z,new THREE.MeshStandardMaterial({color:0xbba577}),g);
+  }
+  if(r.code==='5202'){
+   for(const xx of [b.x-b.width/2+.3,b.x+b.width/2-.3])box(.4,config.floorHeight*3-.35,.4,xx,y+config.floorHeight*1.5,z-d/2,new THREE.MeshStandardMaterial({color:0xd6d5c6}),g);
+  }
+ }
+}
+function createSite(){
+ const ground=box(185,.2,145,-16,-.35,8,new THREE.MeshStandardMaterial({color:0xdde5d5}));ground.receiveShadow=true;
+ const grid=new THREE.GridHelper(180,36,0xc5d0be,0xd0dac8);grid.position.set(-16,-.23,8);scene.add(grid);
+ // Outdoor areas are approximate placements from the old illustrative campus map.
+ const trackShape=new THREE.Shape();trackShape.absellipse(0,0,18,46,0,Math.PI*2,false,0);
+ const track=new THREE.Mesh(new THREE.ShapeGeometry(trackShape,72),new THREE.MeshStandardMaterial({color:0xb4c0a2}));track.rotation.x=-Math.PI/2;track.position.set(-76,-.12,5);scene.add(track);
+ const fieldShape=new THREE.Shape();fieldShape.absellipse(0,0,14.5,40.5,0,Math.PI*2,false,0);
+ const field=new THREE.Mesh(new THREE.ShapeGeometry(fieldShape,72),new THREE.MeshStandardMaterial({color:0xcbd8b6}));field.rotation.x=-Math.PI/2;field.position.set(-76,-.1,5);scene.add(field);
+ for(const s of [1,2,3]){const points=[];for(let i=0;i<=80;i++){const a=i/80*Math.PI*2;points.push(new THREE.Vector3(-76+(14.8+s*.85)*Math.cos(a),-.06,5+(41+s*1.25)*Math.sin(a)));}scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),new THREE.LineBasicMaterial({color:0xe2e8d9})));}
+ box(20,.12,15,-38,-.07,-4,new THREE.MeshStandardMaterial({color:0xc4d3b5}));
+ box(12,.12,22,24,-.07,-2,new THREE.MeshStandardMaterial({color:0xc4d3b5}));
+ box(67,.1,7,-5,-.1,41,new THREE.MeshStandardMaterial({color:0xececdf}));
+ for(const b of config.buildings){
+  buildings.push(b);for(let i=1;i<=4;i++)createFloor(b,`${i}F`);if(b.basement)createFloor(b,'B1');
+  const el=document.createElement('button');el.className='map-label';el.textContent=b.name;el.addEventListener('click',()=>selectBuilding(b.id));$('#labels-layer').append(el);labels.push({el,b});
+ }
+}
+function selectBuilding(id){state.building=id;state.room=null;update();if(id)focusBuilding(id);else home();}
+function update(){
+ for(const g of floorGroups)g.visible=state.floor==='all'?g.userData.floor!=='B1':g.userData.floor===state.floor;
+ // In basement mode the surface disappears so the three confirmed basement plates can be viewed.
+ scene.children.filter(o=>o===scene.userData.ground).forEach(o=>o.visible=state.floor!=='B1');
+ for(const m of roomMeshes){const selected=state.room===m.userData.room;m.material.color.set(selected?0xd8b963:state.building&&m.userData.building!==state.building?0xe9eadd:0xdde6d1);}
+ document.querySelectorAll('.building-button').forEach(el=>{const active=el.dataset.id===(state.building||'all');el.classList.toggle('active',active);el.setAttribute('aria-pressed',String(active));});
+ document.querySelectorAll('.floor-button').forEach(el=>{const active=el.dataset.floor===state.floor;el.classList.toggle('active',active);el.setAttribute('aria-pressed',String(active));});
+ labels.forEach(({el,b})=>el.classList.toggle('active',b.id===state.building));
+ const b=config.buildings.find(b=>b.id===state.building);
+ $('#detail-title').textContent=b?b.name:'校園總覽';
+ $('#detail-description').textContent=state.floor==='B1'?'第2、3、4棟有地下室，僅示意量體；地下室分間、入口與深度尚未確認。':b?b.description:'校舍依圖面相對關係配置，點選建築可查看各樓層空間。';
+ $('#view-name').textContent=`${b?b.name:'全校鳥瞰'}${state.floor==='all'?'':' · '+state.floor}`;
+ renderRooms();
+}
+function renderRooms(){
+ const term=$('#search').value.trim().toLowerCase();
+ const list=data.rooms.filter(r=>(!state.building||r.buildingId===state.building)&&(state.floor==='all'||r.floor===state.floor)&&(!term||[r.code,r.displayName,r.building].join(' ').toLowerCase().includes(term)));
+ $('#space-count').textContent=list.length;$('#result-count').textContent=state.floor==='B1'?'地下室尚未配置教室資料':`符合條件 ${list.length} 個空間`;
+ const container=$('#room-list');container.replaceChildren();
+ for(const r of list){const button=document.createElement('button');button.className='room'+(state.room===r.id?' active':'');const title=document.createElement('b');title.textContent=r.displayName;const sub=document.createElement('small');sub.textContent=`${r.building} · ${r.floor}${r.code?' · '+r.code:' · 無編碼'}`;button.append(title,sub);const note=roomNote(r);if(note){const e=document.createElement('em');e.textContent=note;button.append(e);}button.addEventListener('click',()=>{state.room=r.id;state.building=r.buildingId;state.floor=r.floor;update();const mesh=roomMeshes.find(m=>m.userData.room===r.id);if(mesh){const p=mesh.getWorldPosition(new THREE.Vector3());animateTo(p.clone().add(new THREE.Vector3(-16,25,27)),p);}});container.append(button);}
+}
+function initUI(){
+ const nav=$('#buildings');for(const [i,b] of [{id:'all',name:'全校總覽'},...config.buildings].entries()){const button=document.createElement('button');button.className='building-button';button.dataset.id=b.id;const num=document.createElement('span');num.className='num';num.textContent=String(i).padStart(2,'0');const title=document.createElement('span');title.textContent=b.name;const arrow=document.createElement('span');arrow.className='arrow';arrow.textContent='↗';button.append(num,title,arrow);button.onclick=()=>selectBuilding(b.id==='all'?null:b.id);nav.append(button);}
+ for(const f of floorNames){const button=document.createElement('button');button.className='floor-button';button.dataset.floor=f;button.textContent=f==='all'?'全棟':f;button.onclick=()=>{state.floor=f;state.room=null;update();if(f==='B1')animateTo(new THREE.Vector3(-70,100,90),new THREE.Vector3(0,-3,0));};$('#floors').append(button);}
+ $('#home').onclick=()=>{state.building=null;state.floor='all';state.room=null;$('#search').value='';update();home();};$('#top').onclick=()=>home(true);$('#search').oninput=renderRooms;$('#labels').onchange=()=>$('#labels-layer').hidden=!$('#labels').checked;
+}
+function resize(){const el=$('#scene');renderer.setSize(el.clientWidth,el.clientHeight);camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();}
+function frame(){
+ requestAnimationFrame(frame);
+ if(transition){let t=Math.min((performance.now()-transition.start)/650,1);t=1-Math.pow(1-t,3);camera.position.lerpVectors(transition.from,transition.to,t);controls.target.lerpVectors(transition.old,transition.target,t);if(t>=1)transition=null;}
+ controls.update();renderer.render(scene,camera);
+ const width=$('#scene').clientWidth,height=$('#scene').clientHeight;
+ const northPoint=controls.target.clone().add(new THREE.Vector3(0,0,-10)).project(camera),centerPoint=controls.target.clone().project(camera);
+ $('.north span').style.transform=`rotate(${Math.atan2((northPoint.x-centerPoint.x)*width,(northPoint.y-centerPoint.y)*height)}rad)`;
+ for(const {el,b} of labels){const y=state.floor==='all'?17:state.floor==='B1'?-2:floorY(state.floor)+4;const v=new THREE.Vector3(b.x,y,b.z).project(camera);el.style.left=`${(v.x*.5+.5)*width}px`;el.style.top=`${(-v.y*.5+.5)*height}px`;el.style.display=v.z>1||Math.abs(v.x)>1||Math.abs(v.y)>1||(state.floor==='B1'&&!b.basement)?'none':'';}
+}
+async function start(){
+ const responses=await Promise.all([fetch('./data/spaces.json'),fetch('./data/model-config.json')]);if(responses.some(r=>!r.ok))throw Error('無法載入空間資料');[data,config]=await Promise.all(responses.map(r=>r.json()));
+ scene=new THREE.Scene();scene.background=new THREE.Color(0xe9eee5);
+ camera=new THREE.PerspectiveCamera(42,1,.1,1000);camera.position.set(-150,170,220);
+ renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1;$('#scene').append(renderer.domElement);
+ controls=new OrbitControls(camera,renderer.domElement);controls.target.set(-16,0,8);controls.enableDamping=true;controls.maxPolarAngle=Math.PI*.48;controls.minDistance=12;controls.maxDistance=420;controls.addEventListener('start',()=>transition=null);
+ scene.add(new THREE.HemisphereLight(0xffffff,0x9aaa86,2.6));const sun=new THREE.DirectionalLight(0xfff9e7,3);sun.position.set(-60,100,40);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-130,right:130,top:100,bottom:-100,near:1,far:300});sun.shadow.bias=-.001;scene.add(sun);
+ createSite();scene.userData.ground=scene.children.find(o=>o.isMesh);initUI();resize();new ResizeObserver(resize).observe($('#scene'));
+ renderer.domElement.addEventListener('pointerdown',e=>dragStart=[e.clientX,e.clientY]);
+ renderer.domElement.addEventListener('pointerup',e=>{if(!dragStart||Math.hypot(e.clientX-dragStart[0],e.clientY-dragStart[1])>5)return;const rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);const hit=ray.intersectObjects(pickable.filter(m=>m.parent.visible),false)[0];if(hit){state.building=hit.object.userData.building;state.room=hit.object.userData.room||null;update();}});
+ update();$('#loading').hidden=true;frame();
+ window.campusDebug={state,data,config,floorGroups,roomMeshes,scene,renderer};
+}
+start().catch(e=>{console.error(e);$('#loading').textContent='模型載入失敗。請重新整理網頁，並確認瀏覽器支援WebGL 2。錯誤：'+e.message;});

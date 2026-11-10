@@ -1,0 +1,816 @@
+{
+  "school": "復旦國小",
+  "schoolYear": 115,
+  "rooms": [
+    {
+      "id": "room-1101",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "1F",
+      "code": "1101",
+      "displayName": "事務中心",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1102",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "1F",
+      "code": "1102",
+      "displayName": "總務處",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1103",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "1F",
+      "code": "1103",
+      "displayName": "教務處",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1105",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "1F",
+      "code": "1105",
+      "displayName": "學務處",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1106",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "1F",
+      "code": "1106",
+      "displayName": "健康中心",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "space-B1-1F-hall",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "1F",
+      "code": "",
+      "displayName": "中廊",
+      "type": "通道"
+    },
+    {
+      "id": "room-1201",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "2F",
+      "code": "1201",
+      "displayName": "4年5班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-1202",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "2F",
+      "code": "1202",
+      "displayName": "4年6班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-1203",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "2F",
+      "code": "1203",
+      "displayName": "主計室 人事室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1204",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "2F",
+      "code": "1204",
+      "displayName": "數資中心",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1205",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "2F",
+      "code": "1205",
+      "displayName": "輔導室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1206",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "2F",
+      "code": "1206",
+      "displayName": "校長室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1301",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "3F",
+      "code": "1301",
+      "displayName": "6年6班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-1302",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "3F",
+      "code": "1302",
+      "displayName": "4年7班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-1303",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "3F",
+      "code": "1303",
+      "displayName": "5年6班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-1304",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "3F",
+      "code": "1304",
+      "displayName": "電腦一",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1305",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "3F",
+      "code": "1305",
+      "displayName": "3年5班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-1306",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "3F",
+      "code": "1306",
+      "displayName": "英語一",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1401",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "4F",
+      "code": "1401",
+      "displayName": "5年1班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-1402",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "4F",
+      "code": "1402",
+      "displayName": "5年2班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-1403",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "4F",
+      "code": "1403",
+      "displayName": "5年3班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-1404",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "4F",
+      "code": "1404",
+      "displayName": "教研室 五、六年級",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-1405",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "4F",
+      "code": "1405",
+      "displayName": "5年4班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-1406",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "4F",
+      "code": "1406",
+      "displayName": "5年5班",
+      "type": "普通班"
+    },
+    {
+      "id": "space-B1-4F-dance-storage",
+      "buildingId": "B1",
+      "building": "第一棟",
+      "floor": "4F",
+      "code": "",
+      "displayName": "舞蹈教具儲藏室",
+      "type": "儲藏空間"
+    },
+    {
+      "id": "room-2101",
+      "buildingId": "B2",
+      "building": "第二棟",
+      "floor": "1F",
+      "code": "2101",
+      "displayName": "綜合 教室1",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-2102",
+      "buildingId": "B2",
+      "building": "第二棟",
+      "floor": "1F",
+      "code": "2102",
+      "displayName": "體育室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-2201",
+      "buildingId": "B2",
+      "building": "第二棟",
+      "floor": "2F",
+      "code": "2201",
+      "displayName": "自然一",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-2202",
+      "buildingId": "B2",
+      "building": "第二棟",
+      "floor": "2F",
+      "code": "2202",
+      "displayName": "校史室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-2301",
+      "buildingId": "B2",
+      "building": "第二棟",
+      "floor": "3F",
+      "code": "2301",
+      "displayName": "視聽 教室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-2302",
+      "buildingId": "B2",
+      "building": "第二棟",
+      "floor": "3F",
+      "code": "2302",
+      "displayName": "電腦二",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-2401",
+      "buildingId": "B2",
+      "building": "第二棟",
+      "floor": "4F",
+      "code": "2401",
+      "displayName": "舞蹈3／舞蹈辦公室（共用一室）",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3101",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "1F",
+      "code": "3101",
+      "displayName": "幼兒園 教具室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3102",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "1F",
+      "code": "3102",
+      "displayName": "幼兒園／海洋班 學前特幼班",
+      "type": "幼兒園班級"
+    },
+    {
+      "id": "room-3103",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "1F",
+      "code": "3103",
+      "displayName": "知動教室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3104",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "1F",
+      "code": "3104",
+      "displayName": "幼兒園／白雲班",
+      "type": "幼兒園班級"
+    },
+    {
+      "id": "room-3105",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "1F",
+      "code": "3105",
+      "displayName": "幼兒園 辦公室 廁所",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3106",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "1F",
+      "code": "3106",
+      "displayName": "幼兒園／森林班",
+      "type": "幼兒園班級"
+    },
+    {
+      "id": "room-3107",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "1F",
+      "code": "3107",
+      "displayName": "幼兒園／微風班",
+      "type": "幼兒園班級"
+    },
+    {
+      "id": "room-3108",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "1F",
+      "code": "3108",
+      "displayName": "幼兒園／藍天班",
+      "type": "幼兒園班級"
+    },
+    {
+      "id": "room-3109",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "1F",
+      "code": "3109",
+      "displayName": "幼兒園／太陽班",
+      "type": "幼兒園班級"
+    },
+    {
+      "id": "room-3110",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "1F",
+      "code": "3110",
+      "displayName": "幼兒園／彩虹班",
+      "type": "幼兒園班級"
+    },
+    {
+      "id": "room-3201",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "2F",
+      "code": "3201",
+      "displayName": "教研室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3202",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "2F",
+      "code": "3202",
+      "displayName": "1年1班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3203",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "2F",
+      "code": "3203",
+      "displayName": "1年2班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3204",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "2F",
+      "code": "3204",
+      "displayName": "1年3班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3205",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "2F",
+      "code": "3205",
+      "displayName": "科任教室1",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3206",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "2F",
+      "code": "3206",
+      "displayName": "科任教室2",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3207",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "2F",
+      "code": "3207",
+      "displayName": "2年1班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3208",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "2F",
+      "code": "3208",
+      "displayName": "2年2班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3209",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "2F",
+      "code": "3209",
+      "displayName": "2年3班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3210",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "2F",
+      "code": "3210",
+      "displayName": "2年4班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3301",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "3F",
+      "code": "3301",
+      "displayName": "4年2班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3302",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "3F",
+      "code": "3302",
+      "displayName": "教研室 三、四年級",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3303",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "3F",
+      "code": "3303",
+      "displayName": "4年1班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3304",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "3F",
+      "code": "3304",
+      "displayName": "4年3班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3305",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "3F",
+      "code": "3305",
+      "displayName": "4年4班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3306",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "3F",
+      "code": "3306",
+      "displayName": "多功能教室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3307",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "3F",
+      "code": "3307",
+      "displayName": "3年1班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3308",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "3F",
+      "code": "3308",
+      "displayName": "3年2班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3309",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "3F",
+      "code": "3309",
+      "displayName": "3年3班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3310",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "3F",
+      "code": "3310",
+      "displayName": "3年4班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3401",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "4F",
+      "code": "3401",
+      "displayName": "英語二",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3402",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "4F",
+      "code": "3402",
+      "displayName": "英語三",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3403",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "4F",
+      "code": "3403",
+      "displayName": "創客教室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3404",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "4F",
+      "code": "3404",
+      "displayName": "自然二",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3405",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "4F",
+      "code": "3405",
+      "displayName": "自然三",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-3406",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "4F",
+      "code": "3406",
+      "displayName": "6年1班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3407",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "4F",
+      "code": "3407",
+      "displayName": "6年2班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3408",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "4F",
+      "code": "3408",
+      "displayName": "6年3班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3409",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "4F",
+      "code": "3409",
+      "displayName": "6年4班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-3410",
+      "buildingId": "B3",
+      "building": "第三棟",
+      "floor": "4F",
+      "code": "3410",
+      "displayName": "6年5班",
+      "type": "普通班"
+    },
+    {
+      "id": "room-4101",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "1F",
+      "code": "4101",
+      "displayName": "資源班1",
+      "type": "資源班空間"
+    },
+    {
+      "id": "room-4102",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "1F",
+      "code": "4102",
+      "displayName": "議課中心",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-4103",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "1F",
+      "code": "4103",
+      "displayName": "幼兒園 配膳室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-4201",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "2F",
+      "code": "4201",
+      "displayName": "舞蹈1",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-4202",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "2F",
+      "code": "4202",
+      "displayName": "教師 關懷中心",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-4203",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "2F",
+      "code": "4203",
+      "displayName": "諮商室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-4301",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "3F",
+      "code": "4301",
+      "displayName": "美勞教室1",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-4302",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "3F",
+      "code": "4302",
+      "displayName": "美勞 準備室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-4303",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "3F",
+      "code": "4303",
+      "displayName": "美勞教室2",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-4401",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "4F",
+      "code": "4401",
+      "displayName": "音樂一",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-4402",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "4F",
+      "code": "4402",
+      "displayName": "音樂 準備室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-4403",
+      "buildingId": "B4",
+      "building": "第四棟",
+      "floor": "4F",
+      "code": "4403",
+      "displayName": "書法教室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-5101",
+      "buildingId": "ACT",
+      "building": "活動中心",
+      "floor": "1F",
+      "code": "5101",
+      "displayName": "桌球教室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-5102",
+      "buildingId": "ACT",
+      "building": "活動中心",
+      "floor": "1F",
+      "code": "5102",
+      "displayName": "圖書館",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-5201",
+      "buildingId": "ACT",
+      "building": "活動中心",
+      "floor": "2F",
+      "code": "5201",
+      "displayName": "管樂器材室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-5202",
+      "buildingId": "ACT",
+      "building": "活動中心",
+      "floor": "2F",
+      "code": "5202",
+      "displayName": "禮 堂",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-5301",
+      "buildingId": "ACT",
+      "building": "活動中心",
+      "floor": "3F",
+      "code": "5301",
+      "displayName": "管樂團練室",
+      "type": "行政或專科空間"
+    },
+    {
+      "id": "room-5401",
+      "buildingId": "ACT",
+      "building": "活動中心",
+      "floor": "4F",
+      "code": "5401",
+      "displayName": "舞蹈2",
+      "type": "行政或專科空間"
+    }
+  ]
+}
