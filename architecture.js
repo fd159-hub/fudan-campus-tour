@@ -16,7 +16,6 @@ const cream = finish(0xeee6d3);
 const rose = finish(0xc99796);
 const roseLight = finish(0xe2b8b3);
 const glazing = finish(0x495c60);
-const opening = finish(0x5b4e4a);
 const roof = finish(0x525653);
 const bronze = finish(0xb29b76);
 const brick = finish(0x8e4b3f);
@@ -173,16 +172,17 @@ export function buildFirstBuildingFront(parent, building, floor, y, floorHeight)
       mullions.push([x, y + 1.78, front - 1.94, 0.1, 1.65, 0.08]);
       mullions.push([x, y + 2.08, front - 1.94, bay * 0.72, 0.08, 0.08]);
       if (floor !== '1F') rails.push([x, y + 0.66, front - 0.18, bay - 0.26, 0.62, 0.16]);
-      if (i % 2 === 0) block(group, rose, wing.left + i * bay + 0.12, y + 1.64, front - 0.72, 0.26, 3.2, 0.58);
+      if (floor !== '1F' && i % 2 === 0) block(group, rose, wing.left + i * bay + 0.12, y + 1.64, front - 0.72, 0.26, 3.2, 0.58);
     }
   }
-  repeatedBlocks(group, glazing, windows);
-  repeatedBlocks(group, cream, mullions);
+  if (floor !== '1F') {
+    repeatedBlocks(group, glazing, windows);
+    repeatedBlocks(group, cream, mullions);
+  }
   if (rails.length) repeatedBlocks(group, roseLight, rails);
 
   for (const x of [entry - 4.28, entry + 4.28]) block(group, floor === '1F' ? cream : rose, x, y + 1.68, front - 0.32, 0.75, 3.35, 0.76).castShadow = true;
   if (floor === '1F') {
-    block(group, opening, entry, y + 1.48, front - 2.7, 7.65, 2.93, 0.12);
     block(group, cream, entry, y + 3.04, front - 0.05, 8.1, 0.8, 0.9);
     const sign = textSign('FuDan Elementary School', 7.65, 0.7, '#4a3a35');
     sign.position.set(entry, y + 3.08, front + 0.416);

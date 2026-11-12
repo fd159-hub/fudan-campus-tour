@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { gateObstacles, gateView } from './architecture.js';
 import { sidewalks, wallObstacles, walkBounds } from './perimeter.js';
+import { corridorObstacles, corridorView } from './corridor.js';
 
 export function createGroundWalk({camera,controls,canvas,config,onStart,onExit}){
  const $=s=>document.querySelector(s),panel=$('#walk-panel'),start=$('#walk-start');
  const bounds=walkBounds,spawn=new THREE.Vector3(-7,1.65,34),radius=.42;
- const solids=Object.entries(config.floorLayouts).filter(([key])=>key.endsWith(':1F')).flatMap(([,layout])=>[...layout.plates,...layout.passages]).concat(gateObstacles,wallObstacles);
+ const solids=Object.entries(config.floorLayouts).filter(([key])=>key.endsWith(':1F')&&key!=='B1:1F').flatMap(([,layout])=>[...layout.plates,...layout.passages]).concat(gateObstacles,wallObstacles,corridorObstacles);
  const keys=new Set(),held=new Map();let active=false,saved=null,yaw=0,pitch=-.04,look=null,last=0,blockedAt=-Infinity;
  const svgNS='http://www.w3.org/2000/svg';
  for(const [areas,fill] of [[sidewalks,'#ba8073'],[wallObstacles,'#765c53']]){
@@ -28,6 +29,7 @@ export function createGroundWalk({camera,controls,canvas,config,onStart,onExit})
   $('#walk-exit').focus({preventScroll:true});requestAnimationFrame(()=>{if(innerWidth<=620)document.querySelector('.viewport').scrollIntoView({behavior:'instant',block:'start'});});
  };
  $('#walk-exit').onclick=()=>stop();$('#walk-reset').onclick=()=>reset();$('#walk-gate').onclick=()=>reset(gateView);
+ $('#walk-corridor').onclick=()=>reset(corridorView);
  window.addEventListener('keydown',e=>{if(!active||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==='Escape'){e.preventDefault();stop();return;}const key=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','shift'].includes(key)){e.preventDefault();keys.add(key);}});
  window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',clear);document.addEventListener('visibilitychange',()=>{if(document.hidden)clear();});
  canvas.addEventListener('pointerdown',e=>{if(!active||look||e.button!==0)return;e.preventDefault();look={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});

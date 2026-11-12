@@ -4,6 +4,7 @@ import { createGuidedTour } from './tour.js';
 import { createGroundWalk } from './walk.js';
 import { buildFirstBuildingFront, buildSchoolGate } from './architecture.js';
 import { buildCampusPerimeter } from './perimeter.js';
+import { buildFirstFloorCorridor } from './corridor.js';
 
 const $=s=>document.querySelector(s);
 const state={building:null,floor:'all',room:null};
@@ -37,7 +38,8 @@ function createFloor(b,f){
  // Open-topped white volumes convey floors without claiming detailed door/window geometry.
  const h=config.floorHeight-.45;
  const e=layout.envelope;
- for(const [x,z,w,d] of [[e.x,e.z-e.depth/2,e.width,.22],[e.x-e.width/2,e.z,.22,e.depth],[e.x+e.width/2,e.z,.22,e.depth]]){
+ const firstBuildingGround=b.id==='B1'&&f==='1F';
+ for(const [x,z,w,d] of firstBuildingGround?[]:[[e.x,e.z-e.depth/2,e.width,.22],[e.x-e.width/2,e.z,.22,e.depth],[e.x+e.width/2,e.z,.22,e.depth]]){
   const mesh=box(w,h,d,x,y+h/2+.15,z,wall,g);mesh.userData={building:b.id};pickable.push(mesh);
  }
  for(const v of layout.voids){
@@ -62,6 +64,7 @@ function createFloor(b,f){
   }
  }
  if(b.id==='B1')buildFirstBuildingFront(g,b,f,y,config.floorHeight);
+ if(firstBuildingGround)buildFirstFloorCorridor(g);
 }
 function createSite(){
  const ground=box(185,.2,145,-16,-.35,8,new THREE.MeshStandardMaterial({color:0xcecfca}));ground.receiveShadow=true;
@@ -124,9 +127,13 @@ function initUI(){
   onExit:({restore})=>{if(restore&&tourReturn){Object.assign(state,tourReturn.state);$('#search').value=tourReturn.search;update();animateTo(tourReturn.position,tourReturn.target);}tourReturn=null;}
  });
  walk=createGroundWalk({camera,controls,canvas:renderer.domElement,config,
-  onStart:()=>{tour?.stop({restore:false,focus:false});transition=null;walkReturn={state:{...state},search:$('#search').value};Object.assign(state,{building:null,floor:'all',room:null});$('#search').value='';update();$('#view-name').textContent='校園地面漫遊';},
-  onExit:({restore})=>{if(restore&&walkReturn){Object.assign(state,walkReturn.state);$('#search').value=walkReturn.search;}walkReturn=null;update();}
+  onStart:()=>{tour?.stop({restore:false,focus:false});transition=null;walkReturn={state:{...state},search:$('#search').value};Object.assign(state,{building:null,floor:'all',room:null});$('#search').value='';update();setCorridorWalkView(true);$('#view-name').textContent='校園地面漫遊';},
+  onExit:({restore})=>{if(restore&&walkReturn){Object.assign(state,walkReturn.state);$('#search').value=walkReturn.search;}walkReturn=null;setCorridorWalkView(false);update();}
  });
+}
+function setCorridorWalkView(active){
+ scene.getObjectByName('corridor-ceiling').visible=active;
+ for(const mesh of roomMeshes){if(mesh.parent.userData.building==='B1'&&mesh.parent.userData.floor==='1F')mesh.visible=!active;}
 }
 function resize(){const el=$('#scene');renderer.setSize(el.clientWidth,el.clientHeight);camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();}
 function frame(){
