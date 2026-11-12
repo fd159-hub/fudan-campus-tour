@@ -1,12 +1,16 @@
 import * as THREE from 'three';
 import { gateObstacles, gateView } from './architecture.js';
+import { sidewalks, wallObstacles, walkBounds } from './perimeter.js';
 
 export function createGroundWalk({camera,controls,canvas,config,onStart,onExit}){
  const $=s=>document.querySelector(s),panel=$('#walk-panel'),start=$('#walk-start');
- const bounds={left:-108,right:76,north:-64,south:80},spawn=new THREE.Vector3(-7,1.65,34),radius=.42;
- const solids=Object.entries(config.floorLayouts).filter(([key])=>key.endsWith(':1F')).flatMap(([,layout])=>[...layout.plates,...layout.passages]).concat(gateObstacles);
+ const bounds=walkBounds,spawn=new THREE.Vector3(-7,1.65,34),radius=.42;
+ const solids=Object.entries(config.floorLayouts).filter(([key])=>key.endsWith(':1F')).flatMap(([,layout])=>[...layout.plates,...layout.passages]).concat(gateObstacles,wallObstacles);
  const keys=new Set(),held=new Map();let active=false,saved=null,yaw=0,pitch=-.04,look=null,last=0,blockedAt=-Infinity;
  const svgNS='http://www.w3.org/2000/svg';
+ for(const [areas,fill] of [[sidewalks,'#ba8073'],[wallObstacles,'#765c53']]){
+  for(const p of areas){const rect=document.createElementNS(svgNS,'rect');for(const [key,value] of Object.entries({x:p.x-p.width/2,y:p.z-p.depth/2,width:p.width,height:p.depth,fill}))rect.setAttribute(key,value);$('#walk-map-buildings').append(rect);}
+ }
  for(const b of config.buildings){const rect=document.createElementNS(svgNS,'rect');for(const [k,v] of Object.entries({x:b.x-b.width/2,y:b.z-b.depth/2,width:b.width,height:b.depth,fill:'#cbd7bd',stroke:'#708965','stroke-width':.6}))rect.setAttribute(k,v);$('#walk-map-buildings').append(rect);}
  function blocked(x,z){if(x<bounds.left+radius||x>bounds.right-radius||z<bounds.north+radius||z>bounds.south-radius)return true;return solids.some(p=>{const cx=Math.max(p.x-p.width/2,Math.min(x,p.x+p.width/2)),cz=Math.max(p.z-p.depth/2,Math.min(z,p.z+p.depth/2));return (x-cx)**2+(z-cz)**2<radius**2;});}
  function clear(){keys.clear();held.clear();look=null;document.querySelectorAll('.walk-direction').forEach(b=>b.classList.remove('pressed'));}
@@ -45,7 +49,7 @@ export function createGroundWalk({camera,controls,canvas,config,onStart,onExit})
     if(!blocked(camera.position.x,camera.position.z+dz/steps))camera.position.z+=dz/steps;else blockedAt=now;
    }
   }
-  camera.position.y=spawn.y;$('#walk-message').textContent=now-blockedAt<1200?'前方為校舍或邊界，請沿室外繞行。':'';
+  camera.position.y=spawn.y;$('#walk-message').textContent=now-blockedAt<1200?'前方有牆面、校舍或步道邊界。':'';
   $('#walk-map-position').setAttribute('cx',camera.position.x);$('#walk-map-position').setAttribute('cy',camera.position.z);
   $('#walk-map-heading').setAttribute('x1',camera.position.x);$('#walk-map-heading').setAttribute('y1',camera.position.z);$('#walk-map-heading').setAttribute('x2',camera.position.x-Math.sin(yaw)*9);$('#walk-map-heading').setAttribute('y2',camera.position.z-Math.cos(yaw)*9);
  }

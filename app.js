@@ -3,6 +3,7 @@ import { OrbitControls } from './vendor/OrbitControls.js';
 import { createGuidedTour } from './tour.js';
 import { createGroundWalk } from './walk.js';
 import { buildFirstBuildingFront, buildSchoolGate } from './architecture.js';
+import { buildCampusPerimeter } from './perimeter.js';
 
 const $=s=>document.querySelector(s);
 const state={building:null,floor:'all',room:null};
@@ -12,7 +13,7 @@ const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 let transition=null,dragStart=null;
 let tour=null,tourReturn=null;
 let walk=null,walkReturn=null;
-let exterior;
+let exterior, perimeter;
 const white=new THREE.MeshStandardMaterial({color:0xe6e4da,roughness:.9});
 const wall=new THREE.MeshStandardMaterial({color:0xf1f0e5,roughness:1});
 const edgeMaterial=new THREE.LineBasicMaterial({color:0xaab6a0,transparent:true,opacity:.65});
@@ -63,8 +64,7 @@ function createFloor(b,f){
  if(b.id==='B1')buildFirstBuildingFront(g,b,f,y,config.floorHeight);
 }
 function createSite(){
- const ground=box(185,.2,145,-16,-.35,8,new THREE.MeshStandardMaterial({color:0xdde5d5}));ground.receiveShadow=true;
- const grid=new THREE.GridHelper(180,36,0xc5d0be,0xd0dac8);grid.position.set(-16,-.23,8);scene.add(grid);
+ const ground=box(185,.2,145,-16,-.35,8,new THREE.MeshStandardMaterial({color:0xcecfca}));ground.receiveShadow=true;
  // Outdoor areas are approximate placements from the old illustrative campus map.
  const trackShape=new THREE.Shape();trackShape.absellipse(0,0,18,46,0,Math.PI*2,false,0);
  const track=new THREE.Mesh(new THREE.ShapeGeometry(trackShape,72),new THREE.MeshStandardMaterial({color:0xb4c0a2}));track.rotation.x=-Math.PI/2;track.position.set(-76,-.12,5);scene.add(track);
@@ -75,6 +75,7 @@ function createSite(){
  box(12,.12,22,24,-.07,-2,new THREE.MeshStandardMaterial({color:0xc4d3b5}));
  box(67,.1,7,-5,-.1,41,new THREE.MeshStandardMaterial({color:0xececdf}));
  exterior=buildSchoolGate(scene);
+ perimeter=buildCampusPerimeter(scene);
  for(const b of config.buildings){
   buildings.push(b);for(let i=1;i<=4;i++)createFloor(b,`${i}F`);if(b.basement)createFloor(b,'B1');
   const el=document.createElement('button');el.className='map-label';el.textContent=b.name;el.addEventListener('click',()=>selectBuilding(b.id));$('#labels-layer').append(el);labels.push({el,b});
@@ -88,6 +89,7 @@ function update(){
  // In basement mode the surface disappears so the three confirmed basement plates can be viewed.
  scene.children.filter(o=>o===scene.userData.ground).forEach(o=>o.visible=state.floor!=='B1');
  exterior.group.visible=exterior.plaza.visible=state.floor==='all'||state.floor==='1F';
+ perimeter.visible=state.floor==='all'||state.floor==='1F';
  for(const m of roomMeshes){const selected=state.room===m.userData.room;m.material.color.set(selected?0xd8b963:state.building&&m.userData.building!==state.building?0xe9eadd:0xdde6d1);}
  document.querySelectorAll('.building-button').forEach(el=>{const active=el.dataset.id===(state.building||'all');el.classList.toggle('active',active);el.setAttribute('aria-pressed',String(active));});
  document.querySelectorAll('.floor-button').forEach(el=>{const active=el.dataset.floor===state.floor;el.classList.toggle('active',active);el.setAttribute('aria-pressed',String(active));});

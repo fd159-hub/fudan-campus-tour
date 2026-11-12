@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 const gate = { x: -18, z: 46, depth: 1.1 };
-export const gateView = { x: -9, z: 72, yaw: 0.36, pitch: 0.08 };
+export const gateView = { x: -7, z: 47.9, yaw: 0, pitch: 0.03 };
 const gatePosts = [
   { x: -27.9, width: 1.65, height: 3.0 },
   { x: -19.0, width: 1.35, height: 3.0 },
