@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from './vendor/OrbitControls.js';
 import { createGuidedTour } from './tour.js';
 import { createGroundWalk } from './walk.js';
+import { buildFirstBuildingFront, buildSchoolGate } from './architecture.js';
 
 const $=s=>document.querySelector(s);
 const state={building:null,floor:'all',room:null};
@@ -11,6 +12,7 @@ const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
 let transition=null,dragStart=null;
 let tour=null,tourReturn=null;
 let walk=null,walkReturn=null;
+let exterior;
 const white=new THREE.MeshStandardMaterial({color:0xe6e4da,roughness:.9});
 const wall=new THREE.MeshStandardMaterial({color:0xf1f0e5,roughness:1});
 const edgeMaterial=new THREE.LineBasicMaterial({color:0xaab6a0,transparent:true,opacity:.65});
@@ -58,6 +60,7 @@ function createFloor(b,f){
    for(const xx of [b.x-b.width/2+.3,b.x+b.width/2-.3])box(.4,config.floorHeight*3-.35,.4,xx,y+config.floorHeight*1.5,z-d/2,new THREE.MeshStandardMaterial({color:0xd6d5c6}),g);
   }
  }
+ if(b.id==='B1')buildFirstBuildingFront(g,b,f,y,config.floorHeight);
 }
 function createSite(){
  const ground=box(185,.2,145,-16,-.35,8,new THREE.MeshStandardMaterial({color:0xdde5d5}));ground.receiveShadow=true;
@@ -71,6 +74,7 @@ function createSite(){
  box(20,.12,15,-38,-.07,-4,new THREE.MeshStandardMaterial({color:0xc4d3b5}));
  box(12,.12,22,24,-.07,-2,new THREE.MeshStandardMaterial({color:0xc4d3b5}));
  box(67,.1,7,-5,-.1,41,new THREE.MeshStandardMaterial({color:0xececdf}));
+ exterior=buildSchoolGate(scene);
  for(const b of config.buildings){
   buildings.push(b);for(let i=1;i<=4;i++)createFloor(b,`${i}F`);if(b.basement)createFloor(b,'B1');
   const el=document.createElement('button');el.className='map-label';el.textContent=b.name;el.addEventListener('click',()=>selectBuilding(b.id));$('#labels-layer').append(el);labels.push({el,b});
@@ -83,6 +87,7 @@ function update(){
  for(const g of floorGroups)g.visible=state.floor==='all'?g.userData.floor!=='B1':g.userData.floor===state.floor;
  // In basement mode the surface disappears so the three confirmed basement plates can be viewed.
  scene.children.filter(o=>o===scene.userData.ground).forEach(o=>o.visible=state.floor!=='B1');
+ exterior.group.visible=exterior.plaza.visible=state.floor==='all'||state.floor==='1F';
  for(const m of roomMeshes){const selected=state.room===m.userData.room;m.material.color.set(selected?0xd8b963:state.building&&m.userData.building!==state.building?0xe9eadd:0xdde6d1);}
  document.querySelectorAll('.building-button').forEach(el=>{const active=el.dataset.id===(state.building||'all');el.classList.toggle('active',active);el.setAttribute('aria-pressed',String(active));});
  document.querySelectorAll('.floor-button').forEach(el=>{const active=el.dataset.floor===state.floor;el.classList.toggle('active',active);el.setAttribute('aria-pressed',String(active));});
